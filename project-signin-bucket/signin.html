@@ -1,0 +1,79 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="Chang">
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/axios/dist/axios.standalone.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/CryptoJS/rollups/hmac-sha256.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/CryptoJS/rollups/sha256.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/CryptoJS/components/hmac.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/CryptoJS/components/enc-base64.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/url-template/url-template.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/apiGatewayCore/sigV4Client.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/apiGatewayCore/apiGatewayClient.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/apiGatewayCore/simpleHttpClient.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/apiGatewayCore/utils.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/apigClient.js"></script>
+
+    <title>SignIn Page</title>
+
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" media="all">
+
+    <link href="https://project-signin-bucket.s3.amazonaws.com/signin.css" rel="stylesheet" media="all">
+    <script type="text/javascript">
+      function handleClick() {
+        const inputPhone = document.getElementById("inputPhone").value;
+        const inputPassword = document.getElementById("inputPassword").value;
+        window.localStorage.setItem("phone", inputPhone);
+        const apigClient = apigClientFactory.newClient();
+        apigClient.rootPost(null, {phone: inputPhone, password: inputPassword})
+            .then(response => {
+              var body = response.data + "";
+              console.log(body);
+              window.localStorage.setItem("ID", body);
+              document.cookie = 'id=body; path=/';
+              // window.localStorage.setItem("ID", body);
+              console.log(window.localStorage.getItem("ID"));
+              // alert("Success!");
+              window.location.href=`https://project-event-bucket.s3.amazonaws.com/eventPage.html?userId=${body}`;
+            })
+            .catch(error => {
+              console.log(error);
+              alert("Login error: " + JSON.stringify(error));
+            });
+        document.getElementById("inputPhone").value = "";    
+        document.getElementById("inputPassword").value = "";
+
+      }
+    </script> 
+
+  </head>
+
+  <body class="text-center">
+    <form id = "inputForm" role="inputForm" class="form-signin" onsubmit="handleClick()">
+
+      <h1 class="h3 mb-3 font-weight-normal">Welcome</h1>
+      <label for="inputPhone" class="sr-only">Phone Number</label>
+      <input style="phone" name="phone" type="text" id="inputPhone" class="form-control" placeholder="Phone Number" required autofocus>
+      <label for="inputPassword" class="sr-only">Password</label>
+      <input style="password" name="password" type="password" id="inputPassword" class="form-control" placeholder="Password" required>
+      <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+    </form>
+    <form role="form" class="form-signup" action="http://project-signup-bucket.s3-website-us-east-1.amazonaws.com">
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign up</button>
+    </form>
+    <p class="mt-5 mb-3 text-muted">&copy; Cloud Computing</p>
+    <script>
+      const form = document.getElementById('inputForm');
+      form.addEventListener('submit', logSubmit);
+
+      function logSubmit(event) {
+        event.preventDefault();
+      }
+    </script>
+  </body>
+
+</html>

@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="Chang">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Input Message</title>
+
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/styles.css" rel="stylesheet">
+    <style>
+    /* Set the size of the div element that contains the map */
+        #map {
+            height: 500px;  /* The height is 400 pixels */
+            width: 100%;  /* The width is the width of the web page */
+        }
+
+    </style>
+
+    <script type="text/javascript" src="js/apiGateway-js-sdk/lib/axios/dist/axios.standalone.js"></script>
+    <script type="text/javascript" src="js/apiGateway-js-sdk/lib/CryptoJS/rollups/hmac-sha256.js"></script>
+    <script type="text/javascript" src="js/apiGateway-js-sdk/lib/CryptoJS/rollups/sha256.js"></script>
+    <script type="text/javascript" src="js/apiGateway-js-sdk/lib/CryptoJS/components/hmac.js"></script>
+    <script type="text/javascript" src="js/apiGateway-js-sdk/lib/CryptoJS/components/enc-base64.js"></script>
+    <script type="text/javascript" src="js/apiGateway-js-sdk/lib/url-template/url-template.js"></script>
+    <script type="text/javascript" src="js/apiGateway-js-sdk/lib/apiGatewayCore/sigV4Client.js"></script>
+    <script type="text/javascript" src="js/apiGateway-js-sdk/lib/apiGatewayCore/apiGatewayClient.js"></script>
+    <script type="text/javascript" src="js/apiGateway-js-sdk/lib/apiGatewayCore/simpleHttpClient.js"></script>
+    <script type="text/javascript" src="js/apiGateway-js-sdk/lib/apiGatewayCore/utils.js"></script>
+    <script type="text/javascript" src="js/apiGateway-js-sdk/apigClient.js"></script>
+    <script type="text/javascript" src="js/search.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript">
+        function loadUserSession() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('userId');
+
+            if (userId == null) {
+              window.location.href = "https://project-signin-bucket.s3.amazonaws.com/signin.html";
+            }
+
+            console.log("userId is: " + urlParams.get('userId'));
+            window.UserSession = {};
+            UserSession.token = userId;
+        }
+    </script>
+    
+</head>
+
+<body class="text-center" onload="return loadUserSession()">
+    <div class="title">Input Message</div>
+    <div class="container">
+        <div class="controller">
+            <div class="controller-label">What do you want to do</div>
+            <form id="toDo" class="form-info" onsubmit="handleSearch()">
+                <div>
+                    <span>
+                    <input id="searchRequest" type="text" placeholder="E.g., I want to study at Dibner library this Saturday 2pm." name="message" />
+                    </span>
+                        <span id="start-record-btn" class = "ON" onclick = "toggleVoice(this)">
+                        <img width="40px" height="40px" src="resources/microphone.png" />
+                    </span>
+                    <span>
+                    
+                </div>
+                <div>
+                    <p id="recording-instructions"></p>
+                </div>
+                </span>
+                    <button class="btn btn-lg btn-primary btn-block" id = "verify" type="submit" style="margin-top: 10px; margin-left: 20px; position: relative; width: 80%;">verify</button>
+                </span>
+            </form>
+            <form id="eventTimePlace" class="form-info">
+                <div>
+                    <span>
+                        <label for="event" class="label" style="margin-left: -18px;">Event: </label>
+                        <input type="text" placeholder="Event" name="message" id="event"/>
+                        <span>
+                            <select name="Category" id="category" style="margin-left: 18px; width: 100px;">
+                                <option value="sport">Sport</option>
+                                <option value="food">Food</option>
+                                <option value="study">Study</option>
+                            </select>
+                        </span>
+                        <br></br>
+                        <label for="place" class="label">Place: </label>
+                        <input type="text" placeholder="Place" name="message" id="place"/>
+                        <span ><button class="btn btn-primary" onclick="verifyPlace()">verify place</button></span>
+                        <br></br>
+                        <label for="time" class="label" style="margin-left: -138px;">Time: </label>
+                        <input type="text" placeholder="Time" name="message" id="time"/>
+                        <br></br>
+                        <button class="btn btn-lg btn-primary btn-block" id = "submit" type="submit" onclick="handleEvent()" style="margin-top: 10px; margin-left: 20px; position: relative; width: 80%;">submit</button>
+                    </span>
+                </div>
+            </form>
+        </div>
+        <div class="view">
+            <div class="view-label">Map Area</div>
+            <div id="map" style="margin-top:50px;"></div>
+            <script>
+                // Initialize and add the map
+                function initMap() {
+                  // The location of Uluru
+                  var uluru = {lat: 40.694288, lng: -73.982935};
+                  // var uluru = {lat: lati, lng: long};
+                  // The map, centered at Uluru
+                  var map = new google.maps.Map(
+                      document.getElementById('map'), {zoom: 16, center: uluru});
+                  // The marker, positioned at Uluru
+                  var marker = new google.maps.Marker({position: uluru, map: map});
+                    map.addListener('rightclick', function(event) { 
+                        var lat = event.latLng.lat();  
+                        var lng = event.latLng.lng(); 
+                        var myLocation = {lat, lng};
+                        var marker2 = new google.maps.Marker({position: myLocation, map: map});
+                    }); 
+                }
+
+
+            </script>
+
+            <script async defer src="https://maps.googleapis.com/maps/api/js?key=<Google API Key>&callback=initMap"></script>
+        </div>
+    </div>
+
+    <script>
+        let form = document.getElementById('toDo');
+        form.addEventListener('submit', event => event.preventDefault());
+
+        let photo = document.getElementById('eventTimePlace');
+        photo.addEventListener('submit', event => event.preventDefault());
+    </script>
+
+    <script src="js/voice_recognition.js"></script>
+    
+    <p class="mt-5 mb-3 text-muted">&copy; NYU 2019 Cloud Computing </p>
+
+</body>
+</html>

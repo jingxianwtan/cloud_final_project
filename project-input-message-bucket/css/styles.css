@@ -1,0 +1,120 @@
+html, body {
+  height: 100%;
+}
+
+.container {
+  display: grid;
+  grid-template-areas:
+          'controller view view view view view view view view view view view';
+  grid-gap: 2px;
+  background-color: #dddddd;
+  padding: 2px;
+}
+
+.container > div {
+  background-color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+  padding: 20px 0;
+  font-size: 30px;
+}
+
+/* my own */
+.title {
+  width: 100%;
+  text-align: center;
+  font-size: 30px;
+  margin: 30px 0;
+}
+
+.controller {
+  grid-area: controller;
+}
+
+.view {
+  grid-area: view;
+}
+
+.form-info {
+  width: 100%;
+  position: relative;
+  font-size: 16px;
+  margin-right: 250px;
+}
+
+.controller-label {
+  font-size: 20px;
+  text-align: left;
+  margin: 50px 0 0 20px;
+}
+
+.view-label {
+  font-size: 20px;
+  text-align: left;
+  margin: 0 0 0 20px;
+}
+
+.photos {
+  list-style: none;
+  margin-right: 40px;
+}
+
+.ON {
+  background-color: aquamarine;
+}
+.label {
+  font-size: 20px;
+  margin-left: -20px;
+}
+
+
+#uploadPhoto {
+  padding: 15px 0;
+}
+
+#toDo {
+  padding: 15px 0;
+  margin-bottom: 30px;
+}
+
+#eventTimePlace {
+  padding: 15px 0;
+  margin-bottom: 100px;
+}
+
+#searchRequest {
+  width: 70%;
+  float: left;
+  margin-left: 20px;
+  padding-left: 10px;
+  height: 40px;
+  border-radius: 3px;
+  border: 1px solid #aaaaaa;
+}
+
+#event {
+  width: 50%;
+  margin-left: 20px;
+  padding-left: 10px;
+  height: 40px;
+  border-radius: 3px;
+  border: 1px solid #aaaaaa;
+}
+#place {
+  width: 50%;
+  margin-left: 20px;
+  margin-right: 10px;
+  padding-left: 10px;
+  height: 40px;
+  border-radius: 3px;
+  border: 1px solid #aaaaaa;
+}
+
+#time {
+  width: 50%;
+  margin-left: 20px;
+  padding-left: 10px;
+  height: 40px;
+  border-radius: 3px;
+  border: 1px solid #aaaaaa;
+}
+

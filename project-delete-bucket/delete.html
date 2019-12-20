@@ -1,0 +1,119 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="Chang">
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/axios/dist/axios.standalone.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/CryptoJS/rollups/hmac-sha256.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/CryptoJS/rollups/sha256.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/CryptoJS/components/hmac.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/CryptoJS/components/enc-base64.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/url-template/url-template.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/apiGatewayCore/sigV4Client.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/apiGatewayCore/apiGatewayClient.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/apiGatewayCore/simpleHttpClient.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/apiGatewayCore/utils.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/apigClient.js"></script>
+    <script type="text/javascript" src="dist/aws-sdk.js"></script>
+    <script type="text/javascript" src="dist/aws-sdk.min.js"></script>
+    <script type="text/javascript" src="config.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <title>Events</title>
+
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" media="all">
+
+    <link href="https://project-signin-bucket.s3.amazonaws.com/signin.css" rel="stylesheet" media="all">
+    <script type="text/javascript">
+      function back(){
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('userId');
+        window.location.href='https://project-event-bucket.s3.amazonaws.com/eventPage.html?userId=' + userId;
+      }
+      function deleteNote(noteId, category) {
+        const params = {
+          "flag": "delete",
+          "note_id": noteId,
+          "category": category
+        };
+        console.log(noteId)
+        const apigClient = apigClientFactory.newClient();
+        apigClient.rootPost(null, params).then(response => {
+          // alert("Success!");
+          location.reload();
+        })
+        .catch(error => {
+          alert("Failed!");
+        });
+      }
+      function check() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('userId');
+
+        if (userId == null) {
+          window.location.href = "https://project-signin-bucket.s3.amazonaws.com/signin.html";
+        }
+
+        console.log("userId is: " + urlParams.get('userId'));
+
+        const apigClient = apigClientFactory.newClient();
+
+        const params = {
+          "flag": "notes",
+          "note_id": "All",
+          "category": "All"
+        };
+        apigClient.rootPost(null, params).then(response => {
+          console.log(response);
+          const responseData = response.data;
+          if (responseData === undefined) {
+            console.log("No data in response");
+            alert("No data!");
+          } else {
+              console.log("Search succeeded!");
+              console.log(responseData.Items);
+              sessionStorage.setItem("data", JSON.stringify(responseData.Items));
+              for (let i = 0; i < responseData.Items.length; i++) {
+                if (responseData.Items[i].user_id == userId) {
+                  var temp = responseData.Items[i];
+                  var lat = temp.lat;
+                  var lng = temp.lng;
+                  var event = temp.event;
+                  var noteId = temp.note_id + "";
+                  var category = temp.category;
+                  var date = temp.date;
+                  var text = temp.text;
+                  if (text == "null") {
+                    text = "";
+                  }
+                  var location = temp.location;
+                  var location_plus = temp.location_plus;
+                  var imgsrc = "https://maps.googleapis.com/maps/api/staticmap?center="+location_plus+"&zoom=14&size=192x192&maptype=roadmap&markers=color:red%7Clabel:S%7C"+lat+","+lng+"&key=<Google API Key>";
+                  console.log(imgsrc)
+                  var innerText = '<div class="media"><img src="'+imgsrc+'" class="align-self-start mr-3" alt="map"><div class="media-body"><h5 class="mt-0">'+event+' at '+location+'</h5><p>'+date+'</p><p>'+text+'</p></div>';
+                  var deleteButton = '<button onclick="deleteNote(\''+noteId+'\',\''+category+'\') "type="button" class="btn btn-danger btn-sm">Delete</button></div>';
+                  document.getElementById("node").innerHTML = document.getElementById("node").innerHTML + innerText + deleteButton + "\n<hr>\n";
+              }
+            }
+          }
+        });
+      }
+    </script>
+
+  </head>
+
+  <body class="text-center" onload="check()">
+    <div>
+      <button onclick="back()" type="button" class="btn btn-primary btn" style="margin-left: 750px;">Back</button>
+    </div>
+    <hr>
+    <div id="node"></div>
+
+  </body>
+
+</html>

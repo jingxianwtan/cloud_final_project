@@ -1,0 +1,158 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="Chang">
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/axios/dist/axios.standalone.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/CryptoJS/rollups/hmac-sha256.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/CryptoJS/rollups/sha256.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/CryptoJS/components/hmac.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/CryptoJS/components/enc-base64.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/url-template/url-template.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/apiGatewayCore/sigV4Client.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/apiGatewayCore/apiGatewayClient.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/apiGatewayCore/simpleHttpClient.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/apiGatewayCore/utils.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/apigClient.js"></script>
+    <script type="text/javascript" src="dist/aws-sdk.js"></script>
+    <script type="text/javascript" src="dist/aws-sdk.min.js"></script>
+    <script type="text/javascript" src="config.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <title>Events</title>
+
+    <link href="https://project-signin-bucket.s3.amazonaws.com/signin.css" rel="stylesheet" media="all">
+    <script type="text/javascript">
+      function note() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('userId');
+        window.location.href="http://project-input-message-bucket.s3-website-us-east-1.amazonaws.com?userId=" + userId;
+      }
+
+      function manage() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('userId');
+        window.location.href="http://project-delete-bucket.s3-website-us-east-1.amazonaws.com?userId=" + userId;
+      }
+
+      function category(cat) {
+        document.getElementById("node").innerHTML = "";
+        temp_str = sessionStorage.getItem("data");
+        temp = eval("(" + temp_str + ")");
+        console.log(temp);
+        for (let i = 0; i < temp.length; i++) {
+          if (temp[i].category == cat || cat == "all") {
+            var lat = temp[i].lat;
+            var lng = temp[i].lng;
+            var event = temp[i].event;
+            var date = temp[i].date;
+            var text = temp[i].text;
+            var noteId = temp[i].note_id + "";
+            var username = temp[i].username;
+            var category = temp[i].category;
+            var location = temp[i].location;
+            var location_plus = temp[i].location_plus;
+            if (text == "null") {
+                  text = "";
+            }
+            var imgsrc = "https://maps.googleapis.com/maps/api/staticmap?center="+location_plus+"&zoom=14&size=192x192&maptype=roadmap&markers=color:red%7Clabel:S%7C"+lat+","+lng+"&key=<Google API Key>";
+            console.log(imgsrc)
+            var innerText = '<div class="media"><img src="'+imgsrc+'" class="align-self-start mr-3" alt="map"><div class="media-body"><h5 class="mt-0">'+event+' at '+location+'</h5><p>'+username+'</p><p>'+date+'</p><p>'+text+'</p></div>';
+            var contactButton = '<button onclick="contact(\''+noteId+'\',\''+category+'\') "type="button" class="btn btn-outline-primary btn-sm">Contact</button></div>';
+            document.getElementById("node").innerHTML = document.getElementById("node").innerHTML + innerText + contactButton + "\n<hr>\n";
+          }
+        }
+      }
+      function contact(noteId, category) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('userId');
+        console.log(category)
+        const params = {
+          "flag": "contact",
+          "user_id": userId,
+          "note_id": noteId,
+          "category": category
+        };
+        const apigClient = apigClientFactory.newClient();
+        apigClient.rootPost(null, params).then(response => {
+          alert("Message sent!");
+        })
+        .catch(error => {
+          alert("Failed!");
+        });
+      }
+      function check() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('userId') == null) {
+          window.location.href = "https://project-signin-bucket.s3.amazonaws.com/signin.html";
+        }
+        console.log("userId is: " + urlParams.get('userId'));
+
+        const apigClient = apigClientFactory.newClient();
+
+        const params = {
+          "flag": "notes",
+          "user_id": "All",
+          "category":"All"
+        };
+        apigClient.rootPost(null, params).then(response => {
+          console.log(response);
+          const responseData = response.data;
+          // const responseData = ['{"lat": "40.694371", "long":"-73.986134", "event":"Basketball", "date":"2019/12/19", "text":"test", "location":"6+MetroTech+Center"}']
+          if (responseData === undefined) {
+            console.log("No data in response");
+            alert("No data!");
+          } else {
+              console.log("Search succeeded!");
+              console.log(responseData.Items);
+              sessionStorage.setItem("data", JSON.stringify(responseData.Items));
+              for (let i = 0; i < responseData.Items.length; i++) {
+                var temp = responseData.Items[i];
+                var lat = temp.lat;
+                var lng = temp.lng;
+                var event = temp.event;
+                var noteId = temp.note_id + "";
+                var username = temp.username;
+                var category = temp.category;
+                var date = temp.date;
+                var text = temp.text;
+                if (text == "null") {
+                  text = "";
+                }
+                var location = temp.location;
+                var location_plus = temp.location_plus;
+                var imgsrc = "https://maps.googleapis.com/maps/api/staticmap?center="+location_plus+"&zoom=14&size=192x192&maptype=roadmap&markers=color:red%7Clabel:S%7C"+lat+","+lng+"&key=<Google API Key>";
+                console.log(imgsrc)
+                var innerText = '<div class="media"><img src="'+imgsrc+'" class="align-self-start mr-3" alt="map"><div class="media-body"><h5 class="mt-0">'+event+' at '+location+'</h5><p>'+username+'</p><p>'+date+'</p><p>'+text+'</p></div>';
+                var contactButton = '<button onclick="contact(\''+noteId+'\',\''+category+'\') "type="button" class="btn btn-outline-primary btn-sm">Contact</button></div>';
+                document.getElementById("node").innerHTML = document.getElementById("node").innerHTML + innerText + contactButton + "\n<hr>\n";
+              }
+          }
+        });
+      }
+    </script>
+
+  </head>
+
+  <body class="text-center" onload="check()">
+    <div class="dropdown" align="left">
+      <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Category</button>
+      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        <a class="dropdown-item" href="#" onclick="category('food')">Food</a>
+        <a class="dropdown-item" href="#" onclick="category('sport')">Sport</a>
+        <a class="dropdown-item" href="#" onclick="category('study')">Study</a>
+        <a class="dropdown-item" href="#" onclick="category('all')">All</a>
+      </div>
+      <button onclick="manage()" type="button" class="btn btn-secondary btn" style="margin-left: 700px;">Manage my notes</button>
+      <button onclick="note()" type="button" class="btn btn-primary btn" style="margin-left: 10px;">Add a note</button>
+    </div>
+    <hr>
+    <div id="node"></div>
+  </body>
+
+</html>

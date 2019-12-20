@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="Chang">
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/axios/dist/axios.standalone.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/CryptoJS/rollups/hmac-sha256.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/CryptoJS/rollups/sha256.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/CryptoJS/components/hmac.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/CryptoJS/components/enc-base64.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/url-template/url-template.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/apiGatewayCore/sigV4Client.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/apiGatewayCore/apiGatewayClient.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/apiGatewayCore/simpleHttpClient.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/apiGatewayCore/utils.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/apigClient.js"></script>
+
+    <title>SignUp Page</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" media="all">
+    <link href="https://project-signup-bucket.s3.amazonaws.com/signup.css" rel="stylesheet" media="all">
+    <script type="text/javascript">
+      function handleClick() {
+        const inputPhone = document.getElementById("inputPhone").value;
+        const inputUserName = document.getElementById("inputUserName").value;
+        const inputGender = document.getElementById("inputGender").value;
+        const inputPassword = document.getElementById("inputPassword").value;
+        const confirmPassword = document.getElementById("confirmPassword").value;
+        if (inputPassword != confirmPassword) {
+          document.getElementById("inputPassword").value = "";
+          document.getElementById("confirmPassword").value = "";
+          alert("incorrect password");
+          return;
+        }
+
+        const apigClient = apigClientFactory.newClient();
+        apigClient.rootPost(null, {phone: inputPhone, username: inputUserName,gender: inputGender, password: inputPassword})
+            .then(response => {
+              alert("Success!");
+            })
+            .catch(error => {
+              alert("Failed!");
+            });
+        document.getElementById("inputPhone").value = "";  
+        document.getElementById("inputUserName").value = ""; 
+        document.getElementById("inputGender").value = ""; 
+        document.getElementById("inputPassword").value = "";
+        document.getElementById("confirmPassword").value = "";
+      }
+    </script> 
+  </head>
+
+  <body class="text-center">
+    <form id = "inputForm" class="inputForm" onsubmit="handleClick()">
+
+      <h1 class="h3 mb-3 font-weight-normal">Sign Up</h1>
+      <label for="inputPhone" class="sr-only">Phone Number</label>
+      <input style="phone" name="phone" type="phone" id="inputPhone" class="form-control" placeholder="Phone Number" required autofocus>
+      <label for="inputUserName" class="sr-only">User Name</label>
+      <input style="username" name="username" type="username" id="inputUserName" class="form-control" placeholder="User Name" required>
+      <label for="inputGender" class="sr-only">Gender</label>
+      <input style="gender" name="gender" type="gender" id="inputGender" class="form-control" placeholder="Gender" required>
+      <label for="inputPassword" class="sr-only">Password</label>
+      <input style="password" name="password" type="password" id="inputPassword" class="form-control" placeholder="Password" required>
+      <label for="confirmPassword" class="sr-only">Confirm Password</label>
+      <input style="cpassword" name="cpassword" type="cpassword" id="confirmPassword" class="form-control" placeholder="Confirm Password" required>
+
+
+      <button class="btn btn-lg btn-success btn-block" type="submit" style ="width: 100%;">Submit</button>
+
+    </form>
+
+    <form class = "form-cancel" action="http://project-signin-bucket.s3-website-us-east-1.amazonaws.com">
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Cancel or Return</button>
+    </form>
+    <p class="mt-5 mb-3 text-muted">&copy; Cloud Computing</p>
+    <script>
+      const form = document.getElementById('inputForm');
+      form.addEventListener('submit', logSubmit);
+
+      function logSubmit(event) {
+        event.preventDefault();
+      }
+    </script>
+  </body>
+</html>
